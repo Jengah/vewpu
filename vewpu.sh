@@ -13,6 +13,9 @@ for project in */; do
   if [[ "$current_version" != "$new_python_version" ]]; then
     echo "changing to ${project} directory"
     workon "$project"
+    # gather currently installed packages and write to req file
+    echo "snapshotting packages"
+    pip freeze > vewpu-requirements.txt
     echo "deactivating virtualenv"
     deactivate
     rmvirtualenv "$project"
@@ -20,6 +23,14 @@ for project in */; do
     mkvirtualenv "$project"
     echo "setting virtualenv to project"
     setvirtualenvproject
+    # re-install packages if they exist
+    if [ -s vewpu-requirements.txt ]; then
+      pip install -r vewpu-requirements.txt
+    else
+      echo "No packages to re-install"
+    fi
+    # cleanup
+    rm vewpu-requirements.txt
   else
     echo "${project} is already at the latest installed python: ${new_python_version}"
   fi
